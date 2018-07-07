@@ -10,23 +10,27 @@ function reducerClick (state=null, action) {
             return state;
 }
 const reducers = combineReducers({
-    reducerClick: reducerClick,
+    reducerClick,
     routing: routerReducer
 });
 const store = createStore(reducers);
 
-store.subscribe(()=>{console.log(store.getState())});
+store.subscribe(
+        () => console.log(store.getState())
+);
 
 const history = createBrowserHistory();
 
 class NavBarLinks extends Component {
     constructor (props) {
         super(props);
+        this.state = {nameOne: "Page 1", nameTwo: "Page 2"}
     }
     render () {
+        let {nameOne, nameTwo} = this.state;
         return (<div>
-            <Link to="/page1">{"Page 1"}</Link>
-            <Link to="/page2">{"Page 2"}</Link>
+            <Link to="/page1">{nameOne}</Link>
+            <Link to="/page2">{nameTwo}</Link>
         </div>)
     }
 }
@@ -34,15 +38,13 @@ class NavBarLinks extends Component {
 class Page2 extends Component {
     constructor (props) {
         super(props);
-    }
-    componentDidMount () {
-        if (this.props.match.path==="page2") {
-            debugger;
-        }
+        this.state = {pageName: "Page Two"};
+        // to see that store was created successfully!
+        store.dispatch({type: ""})
     }
     render () {
         return (<div>
-            <p>Page 2</p>
+            <p>{this.state.pageName}</p>
         </div>)
     }
 }
@@ -50,9 +52,10 @@ class Page2 extends Component {
 class Page1 extends Component {
     constructor (props) {
         super(props);
+        this.state = {pageName: "Page One"}
     }
     render () {
-        return (<p>Page 1</p>)
+        return (<p>{this.state.pageName}</p>)
     }
 }
 const Nav = withRouter(connect()(NavBarLinks));
