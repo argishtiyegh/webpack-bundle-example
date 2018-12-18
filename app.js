@@ -1,19 +1,57 @@
 import React, {Component} from 'react';
 import ReactDOM from "react-dom";
-import { createStore, combineReducers } from "redux";
+import {createStore, combineReducers, applyMiddleware} from "redux";
+import "regenerator-runtime/runtime";
 import { createBrowserHistory } from 'history';
 import {Link, Router, Switch, Route, Redirect, withRouter} from "react-router-dom";
 import { routerReducer } from 'react-router-redux';
 import {connect, Provider} from "react-redux";
+import createSagaMiddleware from 'redux-saga'
+import { takeEvery, takeLatest, all, put, fork } from 'redux-saga/effects';
+import reducerClick from "./reducers";
 
-function reducerClick (state=null, action) {
-            return state;
+function* sagasMekXumb () {
+    yield [
+        takeLatest("FETCHING", SagaOne),
+        takeLatest("FETCHING_TWO", SagaTwo)
+        ]
 }
+
+function* SagaOne () {
+    try {
+        console.log('From Saga One!');
+        yield put({type: "FETCHING_END"})
+    } catch (ex) {
+        console.log('error');
+    }
+}
+
+function* SagaTwo () {
+    try {
+        console.log('From Saga Two!');
+        yield put({type: "ACTION_TWO", payload: "Coming from saga two"})
+    } catch(ex) {
+        console.log('error');
+    }
+}
+
+function* rootSaga () {
+    yield[
+        fork(sagasMekXumb),
+    ]
+}
+const sagaMiddleware = createSagaMiddleware();
+
 const reducers = combineReducers({
     reducerClick,
     routing: routerReducer
 });
-const store = createStore(reducers);
+
+const store = createStore(
+    reducers, applyMiddleware(sagaMiddleware)
+);
+
+sagaMiddleware.run(rootSaga);
 
 store.subscribe(
         () => console.log(store.getState())
@@ -31,6 +69,8 @@ class NavBarLinks extends Component {
         return (<div>
             <Link to="/page1">{nameOne}</Link>
             <Link to="/page2">{nameTwo}</Link>
+            <button onClick={() => this.props.dispatch({type: "FETCHING"})}>Click for run sagaOne</button>
+            <button onClick={() => this.props.dispatch({type: "FETCHING_TWO"})}>Click for run sagaTwo</button>
         </div>)
     }
 }
